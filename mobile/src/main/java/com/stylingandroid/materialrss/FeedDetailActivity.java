@@ -1,8 +1,8 @@
 package com.stylingandroid.materialrss;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.widget.TextView;
@@ -14,7 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class FeedDetailActivity extends Activity {
+
+public class FeedDetailActivity extends ActionBarActivity {
     public static final String ARG_ITEM = "ARG_ITEM";
     public static final String NEWLINE = "\\n";
     public static final String BR = "<br />";
@@ -27,7 +28,7 @@ public class FeedDetailActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.feed_detail);
 
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }

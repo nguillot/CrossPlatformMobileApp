@@ -13,7 +13,7 @@ android {
     }
     buildTypes {
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -21,6 +21,7 @@ android {
 
 dependencies {
     compile 'com.mcxiaoke.volley:library:1.0.7'
+    compile "com.android.support:appcompat-v7:21.0.0"
 }
 
 apply from: "${project(':').projectDir}/config/static_analysis.gradle"
