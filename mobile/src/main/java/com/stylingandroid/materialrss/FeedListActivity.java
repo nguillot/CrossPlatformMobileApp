@@ -24,10 +24,9 @@ public class FeedListActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.feed_list);
 
-        recyclerView = (RecyclerView) findViewById(android.R.id.list);
+        recyclerView = (RecyclerView) findViewById(R.id.list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        layoutManager.scrollToPosition(0);
         recyclerView.setLayoutManager(layoutManager);
 
         DataFragment dataFragment = (DataFragment) getFragmentManager().findFragmentByTag(DATA_FRAGMENT_TAG);
