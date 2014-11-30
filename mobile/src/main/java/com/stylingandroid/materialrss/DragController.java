@@ -17,6 +17,7 @@ public class DragController implements RecyclerView.OnItemTouchListener {
     private final GestureDetectorCompat gestureDetector;
 
     private boolean isDragging = false;
+    private View draggingView;
     private boolean isFirst = true;
     private int draggingItem = -1;
     private float startY = 0f;
@@ -59,7 +60,7 @@ public class DragController implements RecyclerView.OnItemTouchListener {
     }
 
     private void dragStart(float x, float y) {
-        View draggingView = recyclerView.findChildViewUnder(x, y);
+        draggingView = recyclerView.findChildViewUnder(x, y);
         View first = recyclerView.getChildAt(0);
         isFirst = draggingView == first;
         startY = y - draggingView.getTop();
@@ -76,9 +77,10 @@ public class DragController implements RecyclerView.OnItemTouchListener {
 
     private void dragEnd(View view) {
         overlay.setImageBitmap(null);
-        view.setVisibility(View.VISIBLE);
-        view.setTranslationY(overlay.getTranslationY() - view.getTop());
-        view.animate().translationY(0f).setDuration(ANIMATION_DURATION).start();
+        draggingView.setVisibility(View.VISIBLE);
+        float translationY = overlay.getTranslationY();
+        draggingView.setTranslationY(translationY - startBounds.top);
+        draggingView.animate().translationY(0f).setDuration(ANIMATION_DURATION).start();
     }
 
     private void paintViewToOverlay(View view) {
