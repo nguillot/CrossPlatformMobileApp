@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.stylingandroid.materialrss.adapter.FeedAdapter;
@@ -25,9 +26,11 @@ public class FeedListActivity extends ActionBarActivity
         setContentView(R.layout.feed_list);
 
         recyclerView = (RecyclerView) findViewById(R.id.list);
+        ImageView overlay = (ImageView) findViewById(R.id.overlay);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnItemTouchListener(new DragController(recyclerView, overlay));
 
         DataFragment dataFragment = (DataFragment) getFragmentManager().findFragmentByTag(DATA_FRAGMENT_TAG);
         if (dataFragment == null) {
