@@ -54,9 +54,9 @@ public class FeedListActivity extends ActionBarActivity
 
     @Override
     public void itemClicked(Item item) {
-            Intent detailIntent = new Intent(FeedListActivity.this, FeedDetailActivity.class);
-            detailIntent.putExtra(FeedDetailActivity.ARG_ITEM, item);
-            startActivity(detailIntent);
+        Intent detailIntent = new Intent(FeedListActivity.this, FeedDetailActivity.class);
+        detailIntent.putExtra(FeedDetailActivity.ARG_ITEM, item);
+        startActivity(detailIntent);
 
     }
 }

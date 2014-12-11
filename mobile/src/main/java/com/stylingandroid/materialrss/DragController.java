@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.stylingandroid.materialrss.adapter.FeedAdapter;
+
 public class DragController implements RecyclerView.OnItemTouchListener {
     public static final int ANIMATION_DURATION = 100;
     private RecyclerView recyclerView;
@@ -19,7 +21,7 @@ public class DragController implements RecyclerView.OnItemTouchListener {
     private boolean isDragging = false;
     private View draggingView;
     private boolean isFirst = true;
-    private int draggingItem = -1;
+    private long draggingId = -1;
     private float startY = 0f;
     private Rect startBounds = null;
 
@@ -48,14 +50,12 @@ public class DragController implements RecyclerView.OnItemTouchListener {
 
     @Override
     public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        int x = (int) e.getX();
         int y = (int) e.getY();
-        View view = recyclerView.findChildViewUnder(x, y);
         if (e.getAction() == MotionEvent.ACTION_UP) {
-            dragEnd(view);
+            dragEnd();
             isDragging = false;
         } else {
-            drag(y, view);
+            drag(y);
         }
     }
 
@@ -67,15 +67,35 @@ public class DragController implements RecyclerView.OnItemTouchListener {
         paintViewToOverlay(draggingView);
         overlay.setTranslationY(y - startY);
         draggingView.setVisibility(View.INVISIBLE);
-        draggingItem = recyclerView.indexOfChild(draggingView);
+        draggingId = recyclerView.getChildItemId(draggingView);
         startBounds = new Rect(draggingView.getLeft(), draggingView.getTop(), draggingView.getRight(), draggingView.getBottom());
     }
 
-    private void drag(int y, View view) {
+    private void drag(int y) {
         overlay.setTranslationY(y - startY);
+        if (!isInPreviousBounds()) {
+            View view = recyclerView.findChildViewUnder(0, y);
+            if (recyclerView.getChildPosition(view) != 0 && view != null) {
+                swapViews(view);
+            }
+        }
     }
 
-    private void dragEnd(View view) {
+    private void swapViews(View current) {
+        long replacementId = recyclerView.getChildItemId(current);
+        FeedAdapter adapter = (FeedAdapter) recyclerView.getAdapter();
+        int start = adapter.getPositionForId(replacementId);
+        int end = adapter.getPositionForId(draggingId);
+        adapter.moveItem(start, end);
+        if (isFirst) {
+            recyclerView.scrollToPosition(end);
+            isFirst = false;
+        }
+        startBounds.top = current.getTop();
+        startBounds.bottom = current.getBottom();
+    }
+
+    private void dragEnd() {
         overlay.setImageBitmap(null);
         draggingView.setVisibility(View.VISIBLE);
         float translationY = overlay.getTranslationY();
@@ -89,5 +109,11 @@ public class DragController implements RecyclerView.OnItemTouchListener {
         view.draw(canvas);
         overlay.setImageBitmap(bitmap);
         overlay.setTop(0);
+    }
+
+    public boolean isInPreviousBounds() {
+        float overlayTop = overlay.getTop() + overlay.getTranslationY();
+        float overlayBottom = overlay.getBottom() + overlay.getTranslationY();
+        return overlayTop < startBounds.bottom && overlayBottom > startBounds.top;
     }
 }
