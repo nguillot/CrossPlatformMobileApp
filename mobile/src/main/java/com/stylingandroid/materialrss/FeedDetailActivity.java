@@ -1,6 +1,5 @@
 package com.stylingandroid.materialrss;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewCompat;
