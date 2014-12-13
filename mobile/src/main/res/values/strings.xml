@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="app_name">Material RSS</string>
-  <string name="title_feed_detail">Feed Detail</string>
-  <!--string name="feed_url">http://feeds.bbci.co.uk/news/rss.xml</string-->
-  <string name="feed_url">http://blog.stylingandroid.com/feed/</string>
+    <string name="app_name">Material RSS</string>
+    <string name="title_feed_detail">Feed Detail</string>
+    <string name="feed_url">http://blog.stylingandroid.com/feed/</string>
+
+    <string name="transition_title">com.stylingandroid.materialrss.transition.TITLE</string>
+    <string name="transition_date">com.stylingandroid.materialrss.transition.DATE</string>
+    <string name="transition_body">com.stylingandroid.materialrss.transition.BODY</string>
 
 </resources>

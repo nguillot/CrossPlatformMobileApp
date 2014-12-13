@@ -1,8 +1,11 @@
 package com.stylingandroid.materialrss;
 
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.widget.TextView;
@@ -13,7 +16,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-
 
 public class FeedDetailActivity extends ActionBarActivity {
     public static final String ARG_ITEM = "ARG_ITEM";
@@ -38,6 +40,9 @@ public class FeedDetailActivity extends ActionBarActivity {
         TextView title = (TextView) findViewById(R.id.feed_detail_title);
         TextView date = (TextView) findViewById(R.id.feed_detail_date);
         WebView webView = (WebView) findViewById(R.id.feed_detail_body);
+        ViewCompat.setTransitionName(title, getString(R.string.transition_title));
+        ViewCompat.setTransitionName(date, getString(R.string.transition_date));
+        ViewCompat.setTransitionName(webView, getString(R.string.transition_date));
 
         title.setText(item.getTitle());
         date.setText(dateFormat.format(new Date(item.getPubDate())));
@@ -51,7 +56,7 @@ public class FeedDetailActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
         if (id == android.R.id.home) {
-            finish();
+            ActivityCompat.finishAfterTransition(this);
             return true;
         }
         return super.onOptionsItemSelected(menuItem);

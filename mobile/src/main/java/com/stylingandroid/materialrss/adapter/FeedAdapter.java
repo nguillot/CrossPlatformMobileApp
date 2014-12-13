@@ -116,6 +116,18 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         public void setOnClickListener(View.OnClickListener listener) {
             parent.setOnClickListener(listener);
         }
+
+        public View getTitleView() {
+            return title;
+        }
+
+        public View getDateView() {
+            return date;
+        }
+
+        public View getBodyView() {
+            return description;
+        }
     }
 
     public interface ItemClickListener {
