@@ -59,6 +59,11 @@ public class DragController implements RecyclerView.OnItemTouchListener {
         }
     }
 
+    @Override
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        //NO-OP
+    }
+
     private void dragStart(float x, float y) {
         draggingView = recyclerView.findChildViewUnder(x, y);
         View first = recyclerView.getChildAt(0);
