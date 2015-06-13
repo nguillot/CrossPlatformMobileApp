@@ -41,7 +41,7 @@ public class FeedDetailActivity extends ActionBarActivity {
         WebView webView = (WebView) findViewById(R.id.feed_detail_body);
         ViewCompat.setTransitionName(title, getString(R.string.transition_title));
         ViewCompat.setTransitionName(date, getString(R.string.transition_date));
-        ViewCompat.setTransitionName(webView, getString(R.string.transition_date));
+        ViewCompat.setTransitionName(webView, getString(R.string.transition_body));
 
         title.setText(item.getTitle());
         date.setText(dateFormat.format(new Date(item.getPubDate())));
