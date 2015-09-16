@@ -23,7 +23,7 @@ public final class SaRssParser {
     private static final String DESCRIPTION = "description";
     private static final String CONTENT = "content:encoded";
 
-    private final DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZZ", Locale.getDefault());
+    private final DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZZZ", Locale.US);
     private final XmlPullParser parser;
     private ParseState state = ParseState.NONE;
 
