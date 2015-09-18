@@ -27,7 +27,7 @@ public final class MockFeedDatasource {
     return feed;
   }
 
-  private static String getStringFromAssetFile(Context instrumentationContext) {
+  public static String getStringFromAssetFile(Context instrumentationContext) {
     final AssetManager assetManager = instrumentationContext.getResources().getAssets();
 
     InputStream input;
