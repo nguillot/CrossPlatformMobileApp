@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" media="screen" href="/~d/styles/rss2full.xsl"?><?xml-stylesheet type="text/css" media="screen" href="http://feeds.feedburner.com/~d/styles/itemcontent.css"?><rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:creativeCommons="http://backend.userland.com/creativeCommonsRssModule" xmlns:feedburner="http://rssnamespace.org/feedburner/ext/1.0" version="2.0">
+
+    <channel>
+        <title>Styling Android</title>
+
+        <link>http://blog.stylingandroid.com</link>
+        <description>A techical guide to to improving the UI and UX Android apps</description>
+        <lastBuildDate>Fri, 27 Mar 2015 10:00:45 +0000</lastBuildDate>
+        <language>en-GB</language>
+        <sy:updatePeriod>hourly</sy:updatePeriod>
+        <sy:updateFrequency>1</sy:updateFrequency>
+        <generator>http://wordpress.org/?v=4.1.1</generator>
+        <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/4.0/</creativeCommons:license>
+        <atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="self" type="application/rss+xml" href="http://feeds.feedburner.com/StylingAndroid" /><feedburner:info uri="stylingandroid" /><atom10:link xmlns:atom10="http://www.w3.org/2005/Atom" rel="hub" href="http://pubsubhubbub.appspot.com/" /><item>
+        <title>Custom Colour Spans</title>
+        <link>http://feedproxy.google.com/~r/StylingAndroid/~3/yfMzakq_9Z4/</link>
+        <comments>http://blog.stylingandroid.com/custom-colour-spans/#comments</comments>
+        <pubDate>Fri, 27 Mar 2015 10:00:45 +0000</pubDate>
+        <dc:creator><![CDATA[Mark Allison]]></dc:creator>
+        <category><![CDATA[Spans]]></category>
+        <category><![CDATA[Text]]></category>
+        <category><![CDATA[androiddev]]></category>
+
+        <guid isPermaLink="false">http://blog.stylingandroid.com/?p=3083</guid>
+        <description><![CDATA[Regular readers of Styling Android should know that I&#8217;m a huge fan of Spans and believe that a good understanding of Spans is essential in order to get the best out of TextView. That said sometimes just doing simple things, such as simply changing the text colour, can seem a little awkward. In this article [&#8230;]]]></description>
+        <content:encoded><![CDATA[<p>Regular readers of Styling Android should know that I&#8217;m a huge fan of Spans and believe that a good understanding of Spans is essential in order to get the best out of <em>TextView</em>. That said sometimes just doing simple things, such as simply changing the text colour, can seem a little awkward. In this article we&#8217;ll look at how to roll your own Span implementations, and see how easy it can be to utilise custom Spans.<br />
+<span id="more-3083"></span></p>
+<p>Before we begin, I&#8217;m going to have a small rant. The inspiration for this article was inheriting some code which implemented text styling using one of my least favourite classes <code>android.text.Html</code>. The class itself isn&#8217;t the problem, after all it works by parsing html markup in a text string and generates the relevant Spans for you. However my experience is that it encourages hacky code which is difficult to maintain. Often code using the <em>Html</em> class will require re-writing to actually implement things directly using Spans in order to meet changing requirements.</p>
+<p>An example may help to illustrate the problem. Consider the case where part of the text of a <em>TextView</em> needs to be a different colour to the rest of the string. This can easily be achieved with the Html class:</p>
+<p></p><pre class="crayon-plain-tag">Spanned text = Html.fromHtml("One word should be &lt;font color='16711680'&gt;red&lt;/font&gt;");
+textView.setText(text);</pre><p> </p>
+<p>The first issue that I have with this is that it looks fugly. Embedding HTML markup within strings in Java code is an immediate code smell simply because there are the tools available to actually do it more efficiently. While the strings could be moved in to a string resource, often this can not happen if the actual colour value needs to be determined at run time. We end up having to perform even fuglier string concatenation or we need use formatted string resources to generate the appropriate HTML string which we then parse using the <em>Html</em> class. A much bigger issue is that while the <code>fromHtml()</code> method of <em>Html</em> will allow us to specify colour resources (including colour state list) within the <code><font color=''></code> markup, it will only look for them within the &#8216;<code>android</code>&#8216; package, so we&#8217;re constrained to system resources, and we cannot use our own resources. This poses something of a problem if we need to change the text colour when the state of the parent <em>TextView</em> changes.</p>
+<p>I&#8217;ve explained one use-case which illustrates why <em>Html</em> is bad, so how <strong>should</strong> it be done? The usual way to change text colour using Spans is to use <em>TextAppearanceSpan</em>, but this usually requires us to specify other things such as the text appearance, or typeface etc. In the above example we&#8217;re only interested in changing the text colour of a part of the string, so <em>TextAppearanceSpan</em> is a little overkill. But we can really easily create our own custom Span which does precisely what we need (and we can then reuse it throughout the app).</p>
+<p>Let&#8217;s start with a simple custom span which will simply changes the colour of the text to which it is applied:</p>
+<p></p><pre class="crayon-plain-tag">class StaticColourSpan extends CharacterStyle {
+    private final int colour;
+
+    public StaticColourSpan(int colour) {
+        super();
+        this.colour = colour;
+    }
+
+    @Override
+    public void updateDrawState(TextPaint tp) {
+        tp.setColor(colour);
+    }
+}</pre><p> </p>
+<p>How simple is that? The constructor takes a colour value. Because we extend <em>CharacterStyle</em>, we are required to implement <code>updateDrawState()</code>. This method will be called before <code>onDraw()</code> for the text and allows us to modify the <em>Paint</em> object which will be used to render the text. So all we need to do is set the colour of the <em>Paint</em> object and everything is good.</p>
+<p>Now some of you have probably already realised that this does not solve the use-case of the text changing colour when the <em>TextView</em> state changes. But we can create another Span which does precisely this:</p>
+<p></p><pre class="crayon-plain-tag">class ColourStateListSpan extends CharacterStyle {
+    private final ColorStateList colorStateList;
+
+    public ColourStateListSpan(ColorStateList colorStateList) {
+        super();
+        this.colorStateList = colorStateList;
+    }
+
+    @Override
+    public void updateDrawState(TextPaint tp) {
+        tp.setColor(colorStateList.getColorForState(tp.drawableState, 0));
+    }
+}</pre><p> </p>
+<p>This is pretty similar, the differences are that the constructor takes a <em>ColorStateList</em> rather than a raw colour value, and that in <code>updateDrawSate()</code> we look up the appropriate colour from the <em>ColorStateList</em> depending on the state which we obtain from the <em>TextPaint</em> object. <code>updateDrawState()</code> will be called whenever the <em>TextView</em> is redrawn, therefore the control state will be know at this point.</p>
+<p>The next thing to consider is that we really don&#8217;t want to be loading <em>ColorStateList</em> objects in order to call this, but we can easily create a factory method which will take a resource identifier and load the appropriate span for us depending on the resource type:</p>
+<p></p><pre class="crayon-plain-tag">public abstract class TextColourSpan extends CharacterStyle {
+    public static TextColourSpan newInstance(Context context, int resourceId) {
+        Resources resources = context.getResources();
+        ColorStateList colorStateList = resources.getColorStateList(resourceId);
+        if (colorStateList != null) {
+            return new ColourStateListSpan(colorStateList);
+        }
+        int colour = resources.getColor(resourceId);
+        if (colour &gt;= 0) {
+            return new StaticColourSpan(colour);
+        }
+        return null;
+    }
+}</pre><p> </p>
+<p>If we change the <em>StaticColourSpan</em> and <em>ColourStateListSpan</em> classes to extend this base class rather than directly extent <em>CharacterStyle</em> we have a polymorphic <code>newInstance()</code> method which will return the appropriate object based upon the type of resource which gets loaded.</p>
+<p>One final thing worth considering is how to determine the range of the string to which the Span should be applied. An obvious choice for string pattern matching is to use regular expressions, sop how about a utility class to do that for us:</p>
+<p></p><pre class="crayon-plain-tag">public final class SpanUtils {
+    private SpanUtils() {
+    }
+
+    public static CharSequence createSpannable(Context context, int stringId, Pattern pattern, CharacterStyle... styles) {
+        String string = context.getString(stringId);
+        return createSpannable(string, pattern, styles);
+    }
+
+    public static CharSequence createSpannable(CharSequence source, Pattern pattern, CharacterStyle... styles) {
+        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(source);
+        Matcher matcher = pattern.matcher(source);
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            applyStylesToSpannable(spannableStringBuilder, start, end, styles);
+        }
+        return spannableStringBuilder;
+    }
+
+    private static SpannableStringBuilder applyStylesToSpannable(SpannableStringBuilder source, int start, int end, CharacterStyle... styles) {
+        for (CharacterStyle style : styles) {
+            source.setSpan(CharacterStyle.wrap(style), start, end, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        }
+        return source;
+    }
+}</pre><p> </p>
+<p>We can now call this with the string, the regex pattern that we want to match, and a list of Span objects which should be applied wherever there is a match. This can easily be applied wherever it is needed, and this is arguably more concise than the Html implementation, but certainly much easier to both understand and maintain. And it works beautifully:</p>
+<p></p><pre class="crayon-plain-tag">public class MainActivity extends ActionBarActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        CharacterStyle redText = TextColourSpan.newInstance(this, R.color.bright_red);
+        CharacterStyle changeText = TextColourSpan.newInstance(this, R.color.pressable_string);
+        Pattern redPattern = Pattern.compile(getString(R.string.simple_string_pattern));
+        Pattern changePattern = Pattern.compile(getString(R.string.pressable_string_pattern));
+
+        final TextView text2 = (TextView) findViewById(R.id.text2);
+        final TextView text3 = (TextView) findViewById(R.id.text3);
+
+        formatUsingSpans(text2, R.string.simple_string, redPattern, redText);
+
+        formatUsingSpans(text3, R.string.pressable_string, redPattern, redText);
+        formatUsingSpans(text3, changePattern, changeText);
+    }
+
+    private void formatUsingSpans(TextView textView, int stringId, Pattern pattern, CharacterStyle... styles) {
+        CharSequence text = SpanUtils.createSpannable(this, stringId, pattern, styles);
+        textView.setText(text);
+    }
+}</pre><p> </p>
+<span class='embed-youtube' style='text-align:center; display: block;'><iframe class='youtube-player' type='text/html' width='480' height='300' src='http://www.youtube.com/embed/6Cm-9_VhpBk?version=3&#038;rel=1&#038;fs=1&#038;showsearch=0&#038;showinfo=1&#038;iv_load_policy=1&#038;wmode=transparent' frameborder='0' allowfullscreen='true'></iframe></span>
+<p>The accompanying source contains some further examples of how this technique can be used to use these few simple classes.</p>
+<p>So, in conclusion: If I inherit any code that you&#8217;ve written and you have cut corners by using <em>Html</em> then I will hunt you down and seek my revenge! However, it is far more likely that <strong>you</strong> will have to maintain that code and you will end up hating yourself for it. Don&#8217;t create technical debt by using the <em>Html</em> class where it takes little more effort to do it the right way using Spans.</p>
+<p>The source code for this article is available <a href="https://bitbucket.org/StylingAndroid/customcolourspans/src/6dda94855654519803e478267b6ab84b8dcd47ea/?at=master" target="_blank">here</a>.</p>
+<p style='text-align:left'>&copy; 2015, <a href='http://blog.stylingandroid.com'>Mark Allison</a>. All rights reserved. This article originally appeared on <a href="http://blog.stylingandroid.com">Styling Android</a>.<br/><br/>Portions of this page are modifications based on work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License</p>
+<div class="feedflare">
+<a href="http://feeds.feedburner.com/~ff/StylingAndroid?a=yfMzakq_9Z4:dPfHyzlZuYU:yIl2AUoC8zA"><img src="http://feeds.feedburner.com/~ff/StylingAndroid?d=yIl2AUoC8zA" border="0"></img></a>
+</div><img src="//feeds.feedburner.com/~r/StylingAndroid/~4/yfMzakq_9Z4" height="1" width="1" alt=""/>]]></content:encoded>
+        <wfw:commentRss>http://blog.stylingandroid.com/custom-colour-spans/feed/</wfw:commentRss>
+        <slash:comments>0</slash:comments>
+        <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/4.0/</creativeCommons:license>
+        <feedburner:origLink>http://blog.stylingandroid.com/custom-colour-spans/</feedburner:origLink></item>
+        <item>
+            <title>RecyclerView FastScroll – Part 2</title>
+            <link>http://feedproxy.google.com/~r/StylingAndroid/~3/d4dHGr3QQic/</link>
+            <comments>http://blog.stylingandroid.com/recyclerview-fastscroll-part-2/#comments</comments>
+            <pubDate>Fri, 20 Mar 2015 10:00:15 +0000</pubDate>
+            <dc:creator><![CDATA[Mark Allison]]></dc:creator>
+            <category><![CDATA[Custom Controls]]></category>
+            <category><![CDATA[RecyclerView]]></category>
+            <category><![CDATA[androiddev]]></category>
+
+            <guid isPermaLink="false">http://blog.stylingandroid.com/?p=3077</guid>
+            <description><![CDATA[In the previous article we got our FastScroller control framework in place. In this concluding article in this series we&#8217;ll add touch and scrolling behaviours. The first thing that we need is an internal method which will be called in order to set the positions of both the bubble and handle whenever the scroll position [&#8230;]]]></description>
+            <content:encoded><![CDATA[<p>In the <a href="/recyclerview-fastscroll-part-1" title="RecyclerView FastScroll - Part 1">previous article </a> we got our FastScroller control framework in place. In this concluding article in this series we&#8217;ll add touch and scrolling behaviours.<br />
+<span id="more-3077"></span></p>
+<p>The first thing that we need is an internal method which will be called in order to set the positions of both the bubble and handle whenever the scroll position changes either because of a touch event within <em>FastScroller</em>, or because the user scrolls the <em>RecyclerView</em> itself:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    .
+    .
+    .
+    private void setPosition(float y) {
+        float position = y / height;
+        int bubbleHeight = bubble.getHeight();
+        bubble.setY(getValueInRange(0, height - bubbleHeight, (int) ((height - bubbleHeight) * position)));
+        int handleHeight = handle.getHeight();
+        handle.setY(getValueInRange(0, height - handleHeight, (int) ((height - handleHeight) * position)));
+    }
+
+    private int getValueInRange(int min, int max, int value) {
+        int minimum = Math.max(min, value);
+        return Math.min(minimum, max);
+    }
+    .
+    .
+    .
+}</pre><p></p>
+<p>Theres a little bit of maths required here as the handle and bubble may be different heights and we need to handle each independently. When scrolling we want each have its top edge at the top when item 0 in the list is visible, and its bottom edge at the bottom when the final item in the list is visible. </p>
+<p><code>getValueInRange()</code> is a utility method which ensure that the bubble and handle always remain within their track.</p>
+<p>Our <em>FastScroller</em> control is associated with a <em>RecyclerView</em>, and so the next task is provide a mechanism to make that association using a simple setter:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    .
+    .
+    .
+    private final ScrollListener scrollListener = new ScrollListener();
+
+    public void setRecyclerView(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+        recyclerView.setOnScrollListener(scrollListener);
+    }
+
+    private class ScrollListener extends OnScrollListener {
+        @Override
+        public void onScrolled(RecyclerView rv, int dx, int dy) {
+            View firstVisibleView = recyclerView.getChildAt(0);
+            int firstVisiblePosition = recyclerView.getChildPosition(firstVisibleView);
+            int visibleRange = recyclerView.getChildCount();
+            int lastVisiblePosition = firstVisiblePosition + visibleRange;
+            int itemCount = recyclerView.getAdapter().getItemCount();
+            int position;
+            if (firstVisiblePosition == 0) {
+                position = 0;
+            } else if (lastVisiblePosition == itemCount - 1) {
+                position = itemCount - 1;
+            } else {
+                position = firstVisiblePosition;
+            }
+            float proportion = (float) position / (float) itemCount;
+            setPosition(height * proportion);
+        }
+    }
+}</pre><p> </p>
+<p>When the setter is called, is sets an <code>OnScrollListener</code> instance which gets called whenever the user directly scrolls the <em>RecyclerView</em> so that we can adjust the positions of the handle and bubble accordingly. There&#8217;s a little bit of logic required here to provide the correct positioning at the top and bottom of the list</p>
+<p>The next thing we need to look at in our <em>FastScroller</em> control is handling touch events. The behaviour that we&#8217;re looking to implement is: When the user taps within the control, the handle will appear. The user can drag up and down to change the current position. When the user releases, then there will be a short delay before the handle is hidden again. This is implemented by overriding <code>onTouchEvent()</code>:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    .
+    .
+    .
+    private static final int HANDLE_HIDE_DELAY = 1000;
+    private static final int TRACK_SNAP_RANGE = 5;
+
+    private final HandleHider handleHider = new HandleHider();
+
+    @Override
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
+            setPosition(event.getY());
+            if (currentAnimator != null) {
+                currentAnimator.cancel();
+            }
+            getHandler().removeCallbacks(handleHider);
+            if (handle.getVisibility() == INVISIBLE) {
+                showHandle();
+            }
+            setRecyclerViewPosition(event.getY());
+            return true;
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            getHandler().postDelayed(handleHider, HANDLE_HIDE_DELAY);
+            return true;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private class HandleHider implements Runnable {
+        @Override
+        public void run() {
+            hideHandle();
+        }
+    }
+
+    private void setRecyclerViewPosition(float y) {
+        if (recyclerView != null) {
+            int itemCount = recyclerView.getAdapter().getItemCount();
+            float proportion;
+            if (bubble.getY() == 0) {
+                proportion = 0f;
+            } else if (bubble.getY() + bubble.getHeight() >= height - TRACK_SNAP_RANGE) {
+                proportion = 1f;
+            } else {
+                proportion = y / (float) height;
+            }
+            int targetPos = getValueInRange(0, itemCount - 1, (int) (proportion * (float) itemCount));
+            recyclerView.scrollToPosition(targetPos);
+        }
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>When we receive a down or move action we set the current position to match the current Y position, cancel any animations which may be running, and any delayed handler callbacks (more on this in a second). If the handle is not visible then we call the method we created earlier to show it. Finally we set the current position of the RecyclerView before retuning true to consume the touch event.</p>
+<p>When we receive an up action we use a <em>Handler</em> to post a delayed action to hide the handle after a short delay. </p>
+<p>When we set the <em>RecyclerView</em> position we include a bit of logic to snap to the bottom if we&#8217;re within a certain distance of the bottom, or snap to the top if the first item is visible, otherwise we calculate the correct proportion value if we&#8217;re somewhere in the middle.</p>
+<p>Note that we&#8217;re only using <code>scrollToPosition()</code> here and not <code>smoothScrollToPosition()</code> so we&#8217;ll have none of the issues covered in the <a href="/scrolling-recyclerview-part-1/" title="Scrolling RecyclerView – Part 1">previous series</a>. </p>
+<p>That&#8217;s our control complete. All that&#8217;s left is to connect it in. First we add it to the layout containing our RecyclerView:</p>
+<p></p><pre class="crayon-plain-tag">&lt;RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:scrollbars="none"
+        tools:context=".MainActivity" /&gt;
+
+    &lt;com.stylingandroid.smoothscrolling.FastScroller
+        android:id="@+id/fast_scroller"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true" /&gt;
+&lt;/RelativeLayout&gt;</pre><p> </p>
+<p>Finally we need to create the association between <em>RecyclerView</em> and <em>FastScroller</em>:</p>
+<p></p><pre class="crayon-plain-tag">public class MainActivity extends Activity {
+    .
+    .
+    .
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerView.setAdapter(LargeAdapter.newInstance(this));
+        int duration = getResources().getInteger(R.integer.scroll_duration);
+        recyclerView.setLayoutManager(new ScrollingLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false, duration));
+        FastScroller fastScroller = (FastScroller) findViewById(R.id.fastscroller);
+        fastScroller.setRecyclerView(recyclerView);
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>That&#8217;s it. We can now see our fas scrolling behaviour:</p>
+<span class='embed-youtube' style='text-align:center; display: block;'><iframe class='youtube-player' type='text/html' width='480' height='300' src='http://www.youtube.com/embed/Qd9WasvJ3kM?version=3&#038;rel=1&#038;fs=1&#038;showsearch=0&#038;showinfo=1&#038;iv_load_policy=1&#038;wmode=transparent' frameborder='0' allowfullscreen='true'></iframe></span>
+<p>One final note: In the Contacts app the FastScroller handle contains a letter indicating the current position within the list. This is using a slightly more complex Adapter than our example, but it should not be a massive amount of work to add this. Perhaps this is something that we&#8217;ll cover in a future post.</p>
+<p>The source code for this series is available <a href="https://bitbucket.org/StylingAndroid/scrollingrecyclerview/src/470c1da307401c1a2af4564780c07486e23a6d76/?at=FastScroll" target="_blank">here</a>.</p>
+<p style='text-align:left'>&copy; 2015, <a href='http://blog.stylingandroid.com'>Mark Allison</a>. All rights reserved. This article originally appeared on <a href="http://blog.stylingandroid.com">Styling Android</a>.<br/><br/>Portions of this page are modifications based on work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License</p>
+<div class="feedflare">
+<a href="http://feeds.feedburner.com/~ff/StylingAndroid?a=d4dHGr3QQic:dUvc2qxBWjM:yIl2AUoC8zA"><img src="http://feeds.feedburner.com/~ff/StylingAndroid?d=yIl2AUoC8zA" border="0"></img></a>
+</div><img src="//feeds.feedburner.com/~r/StylingAndroid/~4/d4dHGr3QQic" height="1" width="1" alt=""/>]]></content:encoded>
+            <wfw:commentRss>http://blog.stylingandroid.com/recyclerview-fastscroll-part-2/feed/</wfw:commentRss>
+            <slash:comments>0</slash:comments>
+            <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/4.0/</creativeCommons:license>
+            <feedburner:origLink>http://blog.stylingandroid.com/recyclerview-fastscroll-part-2/</feedburner:origLink></item>
+        <item>
+            <title>RecyclerView FastScroll – Part 1</title>
+            <link>http://feedproxy.google.com/~r/StylingAndroid/~3/E3phitfAvqw/</link>
+            <comments>http://blog.stylingandroid.com/recyclerview-fastscroll-part-1/#comments</comments>
+            <pubDate>Fri, 13 Mar 2015 10:00:56 +0000</pubDate>
+            <dc:creator><![CDATA[Mark Allison]]></dc:creator>
+            <category><![CDATA[Drawables]]></category>
+            <category><![CDATA[RecyclerView]]></category>
+            <category><![CDATA[Shape Drawable]]></category>
+            <category><![CDATA[androiddev]]></category>
+
+            <guid isPermaLink="false">http://blog.stylingandroid.com/?p=3073</guid>
+            <description><![CDATA[In the previous series we looked at how we could get smoothScrollToPosition() working in a timely manner when using LinearLayoutManager with a large data set. An alternative UX approach to using smoothScrollToPosition() which may be applicable in some use-cases is to avoid smooth scrolling altogether and use the fast scroll behaviour which has long been [&#8230;]]]></description>
+            <content:encoded><![CDATA[<p>In the <a href="/scrolling-recyclerview-part-1/" title="Scrolling RecyclerView – Part 1">previous series</a> we looked at how we could get <code>smoothScrollToPosition()</code> working in a timely manner when using <em>LinearLayoutManager</em> with a large data set. An alternative UX approach to using <code>smoothScrollToPosition()</code> which may be applicable in some use-cases is to avoid smooth scrolling altogether and use the fast scroll behaviour which has long been a staple of <em>ListView</em>. However, <em>RecyclerView</em> does not have fast scroll built in so, in this short series, we&#8217;ll look at how to implement fast scroll in <em>RecyclerView</em>.<br />
+<span id="more-3073"></span></p>
+<p>So the behaviour that we&#8217;re after is a normal scroll bar behaviour with a &#8216;bubble&#8217; which moves along with the RecyclerView scrolling, but when the user drags the bubble, a draggable handle pops up which hides after a short delay when the user ends the drag:</p>
+<span class='embed-youtube' style='text-align:center; display: block;'><iframe class='youtube-player' type='text/html' width='480' height='300' src='http://www.youtube.com/embed/Qd9WasvJ3kM?version=3&#038;rel=1&#038;fs=1&#038;showsearch=0&#038;showinfo=1&#038;iv_load_policy=1&#038;wmode=transparent' frameborder='0' allowfullscreen='true'></iframe></span>
+<p>We&#8217;ll take the code from the previous series and add fast scroll behaviour to it. The code for this series will be <code>minSdkVersion='21'</code> to simplify the drawables required (and keep the code a little cleaner). It will be easy to port this code to much earlier versions by adapting the drawables accordingly but little or no other changes will be required.</p>
+<p>Let&#8217;s start by defining the drawable in question. This will be the drag handle which will appear when fast scrolling is active. I have copied the general appearance from the Contacts app fast scroller, its a rectangle with all but the bottom right corner rounded, and we&#8217;ll pick up the accent colour:</p>
+<p></p><pre class="crayon-plain-tag">?xml version="1.0" encoding="utf-8"?&gt;
+&lt;shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle"&gt;
+
+    &lt;corners
+        android:topLeftRadius="@dimen/fastscroller_handle_corner"
+        android:topRightRadius="@dimen/fastscroller_handle_corner"
+        android:bottomLeftRadius="@dimen/fastscroller_handle_corner"
+        android:bottomRightRadius="0dp" /&gt;
+
+    &lt;solid android:color="?android:attr/colorAccent" /&gt;
+
+    &lt;size
+        android:height="@dimen/fastscroller_handle_size"
+        android:width="@dimen/fastscroller_handle_size" /&gt;
+&lt;/shape&gt;</pre><p> </p>
+<p>We&#8217;re using a shape drawable here, so in Lollipop we&#8217;ll automatically get the correct shadow if we apply elevation. The shadow is the main simplification we get by using <code>minSdkVersion='21'</code>. To back port this code you&#8217;ll need to use an alternate approach here, such as using a bitmap drawable here instead of a shape drawable.</p>
+<p>Our <em>FastScroller</em> control will also provide its own scroll &#8216;bubble&#8217; &#8211; the bubble showing the current scroll position that would normally be displayed with the <em>RecyclerView</em> itself. Once again this is a simple shape drawable which pick up a primary colour from the theme:</p>
+<p></p><pre class="crayon-plain-tag">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle"&gt;
+
+    &lt;corners android:radius="@dimen/fastscroller_reack_corner" /&gt;
+
+    &lt;solid android:color="?android:attr/colorPrimaryDark" /&gt;
+
+    &lt;size
+        android:height="@dimen/fastscroller_track_height"
+        android:width="@dimen/fastscroller_track_width" /&gt;
+&lt;/shape&gt;</pre><p> </p>
+<p>This may need a slight tweak of <code>?android:attr/colorPrimaryDark</code> to get it to work with AppCompat themes.</p>
+<p>Next we need to define a layout which will contain the track and handle, with the handle initially invisible:</p>
+<p></p><pre class="crayon-plain-tag">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;ImageButton
+        android:id="@+id/fastscroller_handle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/fastscroller_handle"
+        android:background="@drawable/fastscroller_handle"
+        android:elevation="4dp"
+        android:visibility="invisible" /&gt;
+
+    &lt;ImageView
+        android:id="@+id/fastscroller_bubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/fastscroller_track"
+        android:src="@drawable/fastscroller_track"
+        android:layout_marginStart="@dimen/fastscroller_track_padding"
+        android:layout_marginEnd="@dimen/fastscroller_track_padding" /&gt;
+
+&lt;/merge&gt;</pre><p> </p>
+<p>Next we&#8217;ll create a custom view which will encapsulate our fast scroll behaviour:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    private View bubble;
+    private View handle;
+
+
+    public FastScroller(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        initialise(context);
+    }
+
+    public FastScroller(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        initialise(context);
+    }
+
+    private void initialise(Context context) {
+        setOrientation(HORIZONTAL);
+        setClipChildren(false);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        inflater.inflate(R.layout.fastscroller, this);
+        bubble = findViewById(R.id.fastscroller_bubble);
+        handle = findViewById(R.id.fastscroller_handle);
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>This is a based upon a horizontal <em>LinearLayout</em> which will provide the fast scroll behaviour for a <em>RecyclerView</em> instance which scrolls vertically (the orientation is hard-coded, but it should be easy enough to adapt this, if necessary). We need to call <code>setClipChildren(false)</code> otherwise our elevation shadows may get clipped. We need to extend <em>LinearLayout</em> rather than, for example <em>FrameLayout</em>, here because the <code>fastscroller.xml</code> layout contains two controls which need to be positioned side-by-side, we want to keep the layout hierarchy as flat as possible so we don&#8217;t want an additional layout level in there so we use <code><merge></code> as the parent of that layout which requires our custom control to extend <em>LinearLayout</em> to correctly position these two Views.</p>
+<p>Next we&#8217;ll add a couple of methods with will create the animations to show and hide the handle:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    .
+    .
+    .
+    private static final int HANDLE_ANIMATION_DURATION = 100;
+
+    private static final String SCALE_X = "scaleX";
+    private static final String SCALE_Y = "scaleY";
+    private static final String ALPHA = "alpha";
+
+    private AnimatorSet currentAnimator = null;
+
+    private void showHandle() {
+        AnimatorSet animatorSet = new AnimatorSet();
+        handle.setPivotX(handle.getWidth());
+        handle.setPivotY(handle.getHeight());
+        handle.setVisibility(VISIBLE);
+        Animator growerX = ObjectAnimator.ofFloat(handle, SCALE_X, 0f, 1f).setDuration(HANDLE_ANIMATION_DURATION);
+        Animator growerY = ObjectAnimator.ofFloat(handle, SCALE_Y, 0f, 1f).setDuration(HANDLE_ANIMATION_DURATION);
+        Animator alpha = ObjectAnimator.ofFloat(handle, ALPHA, 0f, 1f).setDuration(HANDLE_ANIMATION_DURATION);
+        animatorSet.playTogether(growerX, growerY, alpha);
+        animatorSet.start();
+    }
+
+    private void hideHandle() {
+        currentAnimator = new AnimatorSet();
+        handle.setPivotX(handle.getWidth());
+        handle.setPivotY(handle.getHeight());
+        Animator shrinkerX = ObjectAnimator.ofFloat(handle, SCALE_X, 1f, 0f).setDuration(HANDLE_ANIMATION_DURATION);
+        Animator shrinkerY = ObjectAnimator.ofFloat(handle, SCALE_Y, 1f, 0f).setDuration(HANDLE_ANIMATION_DURATION);
+        Animator alpha = ObjectAnimator.ofFloat(handle, ALPHA, 1f, 0f).setDuration(HANDLE_ANIMATION_DURATION);
+        currentAnimator.playTogether(shrinkerX, shrinkerY, alpha);
+        currentAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                handle.setVisibility(INVISIBLE);
+                currentAnimator = null;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                super.onAnimationCancel(animation);
+                handle.setVisibility(INVISIBLE);
+                currentAnimator = null;
+            }
+        });
+        currentAnimator.start();
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>These are both pretty straightforward &#8211; we just grow and shrink from the bottom right corner while fading in and out. </p>
+<p>We also need to know the track length for knowing where to position the bubble, and also determining the item we need to scroll to when we receive a touch event. The easiest way to do this is override onSizeChanged, and get the height whenever it&#8217;s called:</p>
+<p></p><pre class="crayon-plain-tag">public class FastScroller extends LinearLayout {
+    .
+    .
+    .
+    private int height;
+
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        height = h;
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>That&#8217;s the basis of our FastScroller, but we now need to handle touch events in order to allow the user to fast scroll, and also track changes in the RecyclerView scrolling so that the bubble position responds to the user directly scrolling the RecyclerView. We&#8217;ll look at implementing those in the concluding article in this series.</p>
+<p>Normally I like to publish code along with each article, but the above code in isolation doesn&#8217;t actually do very much, so in this case I&#8217;ll hold it back until the next article when everything will be connected up and working.</p>
+<p style='text-align:left'>&copy; 2015, <a href='http://blog.stylingandroid.com'>Mark Allison</a>. All rights reserved. This article originally appeared on <a href="http://blog.stylingandroid.com">Styling Android</a>.<br/><br/>Portions of this page are modifications based on work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License</p>
+<div class="feedflare">
+<a href="http://feeds.feedburner.com/~ff/StylingAndroid?a=E3phitfAvqw:oJjLLoC9JYk:yIl2AUoC8zA"><img src="http://feeds.feedburner.com/~ff/StylingAndroid?d=yIl2AUoC8zA" border="0"></img></a>
+</div><img src="//feeds.feedburner.com/~r/StylingAndroid/~4/E3phitfAvqw" height="1" width="1" alt=""/>]]></content:encoded>
+            <wfw:commentRss>http://blog.stylingandroid.com/recyclerview-fastscroll-part-1/feed/</wfw:commentRss>
+            <slash:comments>1</slash:comments>
+            <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/4.0/</creativeCommons:license>
+            <feedburner:origLink>http://blog.stylingandroid.com/recyclerview-fastscroll-part-1/</feedburner:origLink></item>
+        <item>
+            <title>Scrolling RecyclerView – Part 3</title>
+            <link>http://feedproxy.google.com/~r/StylingAndroid/~3/ghiKK7ZExF4/</link>
+            <comments>http://blog.stylingandroid.com/scrolling-recyclerview-part-3/#comments</comments>
+            <pubDate>Fri, 06 Mar 2015 10:00:46 +0000</pubDate>
+            <dc:creator><![CDATA[Mark Allison]]></dc:creator>
+            <category><![CDATA[Adapter]]></category>
+            <category><![CDATA[LayoutManager]]></category>
+            <category><![CDATA[LinearLayoutManager]]></category>
+            <category><![CDATA[LinearSmoothScroller]]></category>
+            <category><![CDATA[RecyclerView]]></category>
+            <category><![CDATA[SmoothScroller]]></category>
+            <category><![CDATA[androiddev]]></category>
+
+            <guid isPermaLink="false">http://blog.stylingandroid.com/?p=3056</guid>
+            <description><![CDATA[In the previous article we did an exploration in to how smooth scrolling in LinearLayoutManager is performed in order to understand why calling smoothScrollToPosition() on RecyclerView does not permit us to specify a duration for the scroll. In this article we&#8217;ll look at how we can customise this behaviour given we understand how the list [&#8230;]]]></description>
+            <content:encoded><![CDATA[<p>In the <a href="/scrolling-recycler-view-part-2">previous article</a> we did an exploration in to how smooth scrolling in LinearLayoutManager is performed in order to understand why calling smoothScrollToPosition() on RecyclerView does not permit us to specify a duration for the scroll. In this article we&#8217;ll look at how we can customise this behaviour given we understand how the list items will be used within the RecyclerView.<br />
+<span id="more-3056"></span></p>
+<p>First let&#8217;s consider our list items. We&#8217;re using a standard <code>android.R.layout.simple_list_item_1</code> layout for each list item, and the text itself it relatively short &#8211; &#8216;Item 1000&#8242; will be the longest string that we have to fit in, and this isn&#8217;t going to wrap even on the smallest of displays. Therefore we can have a high degree of confidence that each list item will have a consistent height. Knowing this gives us something of an advantage because, if we know the height of all list items, we can determine the total number of pixels we must scroll through to reach the end position.</p>
+<p>So first we need to subclass <em>LinearLayoutManager</em> so that we can override <code>smoothScrollToPosition()</code>:</p>
+<p></p><pre class="crayon-plain-tag">public class ScrollingLinearLayoutManager extends LinearLayoutManager {
+    private final int duration;
+
+    public ScrollingLinearLayoutManager(Context context, int orientation, boolean reverseLayout, int duration) {
+        super(context, orientation, reverseLayout);
+        this.duration = duration;
+    }
+
+    @Override
+    public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state,
+                                       int position) {
+        View firstVisibleChild = recyclerView.getChildAt(0);
+        int itemHeight = firstVisibleChild.getHeight();
+        int currentPosition = recyclerView.getChildPosition(firstVisibleChild);
+        int distanceInPixels = Math.abs((currentPosition - position) * itemHeight);
+        if (distanceInPixels == 0) {
+            distanceInPixels = (int) Math.abs(firstVisibleChild.getY());
+        }
+        SmoothScroller smoothScroller = new SmoothScroller(recyclerView.getContext(), distanceInPixels, duration);
+        smoothScroller.setTargetPosition(position);
+        startSmoothScroll(smoothScroller);
+    }
+    .
+    .
+    .
+}</pre><p> </p>
+<p>In <code>smoothScrollToPosition()</code> we get the first visible child from the <em>RecyclerView</em>, determine its height and current position and, from that information, and the target position we can determine the number of pixels that we need to scroll through. There&#8217;s an edge-case of if the first item is partially scrolled off the top of the screen will give a position delta of 0, so we just set the distance to the Y offset of the first visible child in this case.</p>
+<p>It&#8217;s worth pointing out that we use absolute values throughout. We&#8217;re not interested in the direction of scrolling &#8211; that&#8217;s already handled for us. We merely need to calculate the duration, so the total number of pixels that we have to traverse is what is important here.</p>
+<p>So now we need to subclass <em>LinearSmoothScroller</em> to override the scroll duration calculation:</p>
+<p></p><pre class="crayon-plain-tag">public class ScrollingLinearLayoutManager extends LinearLayoutManager {
+    .
+    .
+    .
+    private class SmoothScroller extends LinearSmoothScroller {
+        private static final int TARGET_SEEK_SCROLL_DISTANCE_PX = 10000;
+        private final float distanceInPixels;
+        private final float duration;
+
+        public SmoothScroller(Context context, int distanceInPixels, int duration) {
+            super(context);
+            this.distanceInPixels = distanceInPixels;
+            float millisecondsPerPx = calculateSpeedPerPixel(context.getResources().getDisplayMetrics());
+            this.duration = distanceInPixels &lt; TARGET_SEEK_SCROLL_DISTANCE_PX ?
+                (int) (Math.abs(distanceInPixels) * millisecondsPerPx) : duration;
+        }
+
+        @Override
+        public PointF computeScrollVectorForPosition(int targetPosition) {
+            return ScrollingLinearLayoutManager.this
+                    .computeScrollVectorForPosition(targetPosition);
+        }
+
+        @Override
+        protected int calculateTimeForScrolling(int dx) {
+            float proportion = (float) dx / distanceInPixels;
+            return (int) (duration * proportion);
+        }
+    }
+}</pre><p> </p>
+<p>So we&#8217;re not changing the actual behaviour &#8211; <em>SmoothScroller</em> will still perform a series of 10000 pixel flings, we&#8217;re just altering how the duration of each of these flings is calculated.</p>
+<p>In the constructor we just perform a check to see if the scroll amount is less that a single fling, and if so we just perform a fixed speed scroll, otherwise we set the total duration for the entire scroll operation.</p>
+<p>When there are multiple flings <code>calculateTimeForScrolling()</code> gets called for each fling operation to determine its duration. All we need to do here is calculate the proportion of the total distance that the fling will cover and allow it the same proportion of the total duration.</p>
+<p>So when we can now see that the scrolling is much faster while still behaving well over short scrolls:</p>
+<span class='embed-youtube' style='text-align:center; display: block;'><iframe class='youtube-player' type='text/html' width='480' height='300' src='http://www.youtube.com/embed/tL7jxo96gNA?version=3&#038;rel=1&#038;fs=1&#038;showsearch=0&#038;showinfo=1&#038;iv_load_policy=1&#038;wmode=transparent' frameborder='0' allowfullscreen='true'></iframe></span>
+<p>This is all well and good if we know that our list items are a fixed height, but what about if we have multiple different view types within the <em>Adapter</em>, or we know that our <em>View</em> sizes will vary? The key to how to solve this becomes a matter of understanding how your views will work, and perhaps putting some of the logic determining relative pixel distances between two list items in to the Adapter itself.</p>
+<p>For example, consider a contacts list with header items marking each different letter. The Adapter contains two distinct View types: The first for individual contacts within the list, and the second for header lines which appear at points where the initial letter changed. If all of the header items are of a fixed size, and the contact items are also of fixed but different size to the header items then given a start and end position the Adapter should be able to calculate to total scroll distance in pixels.</p>
+<p>For non-uniform list item sizes it should be possible to give an approximate average value (which you should be able to make a guess at by understanding how your layouts will work). In this case you may experience slight variations in the total scroll duration, but overall you should still be able to ensure that a scroll over a long distance does not keep the user waiting for too long.</p>
+<p>For really complex lists one approach may be to hold a sparse array full of sizes for each list item within the Adapter. As each list item is bound its size is added to the sparse array. When a <code>smoothScrollToPosition()</code> is invoked, the Adapter calculates an average item size based upon the items it has bound (an therefore knows the size of). So as the scroll is in progress the Adapter is learning as it goes, and can provide an increasingly more accurate average size as the scroll progresses.</p>
+<p>Please bear in mind that all of the ideas outlined within this article are specific to the default behaviour of <em>LinearLayoutManager</em> and if you&#8217;re using another <em>LayoutManager</em> the scrolling behaviour will be different and may require a different approach. </p>
+<p>That concludes our dive in to the scrolling behaviour of <em>LinearLayoutManager</em>, but in the next short series we&#8217;ll have a look at an alternative approach in terms of UX which may eliminate the need to use <code>smoothScrollToPosition()</code>.</p>
+<p>The source code for this article is available <a href="https://bitbucket.org/StylingAndroid/scrollingrecyclerview/src/8655848a831e6cb78367de7574a3e62f9d2c1198/?at=Part3" target="_blank">here</a>.</p>
+<p style='text-align:left'>&copy; 2015, <a href='http://blog.stylingandroid.com'>Mark Allison</a>. All rights reserved. This article originally appeared on <a href="http://blog.stylingandroid.com">Styling Android</a>.<br/><br/>Portions of this page are modifications based on work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License</p>
+<div class="feedflare">
+<a href="http://feeds.feedburner.com/~ff/StylingAndroid?a=ghiKK7ZExF4:bvN__F9hnuk:yIl2AUoC8zA"><img src="http://feeds.feedburner.com/~ff/StylingAndroid?d=yIl2AUoC8zA" border="0"></img></a>
+</div><img src="//feeds.feedburner.com/~r/StylingAndroid/~4/ghiKK7ZExF4" height="1" width="1" alt=""/>]]></content:encoded>
+            <wfw:commentRss>http://blog.stylingandroid.com/scrolling-recyclerview-part-3/feed/</wfw:commentRss>
+            <slash:comments>0</slash:comments>
+            <creativeCommons:license>http://creativecommons.org/licenses/by-nc-sa/4.0/</creativeCommons:license>
+            <feedburner:origLink>http://blog.stylingandroid.com/scrolling-recyclerview-part-3/</feedburner:origLink></item>
+    </channel>
+</rss>

@@ -10,17 +10,17 @@ import dagger.Module;
 import dagger.Provides;
 
 /**
- * Dagger module that provides objects which will live during the application lifecycle.
+ * Dagger module that provides objects which will live during the context lifecycle.
  */
 @Module
 public class ApplicationModule {
-  private final AndroidApplication application;
+  private final Context context;
 
-  public ApplicationModule(AndroidApplication application) {
-    this.application = application;
+  public ApplicationModule(Context aContext) {
+    this.context = aContext;
   }
 
-  @Provides @Singleton Context provideApplicationContext() {
-    return this.application;
+  @Provides @Singleton Context context() {
+    return this.context;
   }
 }

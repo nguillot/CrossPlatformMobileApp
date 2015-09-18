@@ -23,4 +23,8 @@ public class AndroidApplication extends android.app.Application {
   public ApplicationComponent component() {
     return applicationComponent;
   }
+
+  public void setApplicationComponent(ApplicationComponent applicationComponent) {
+    this.applicationComponent = applicationComponent;
+  }
 }
