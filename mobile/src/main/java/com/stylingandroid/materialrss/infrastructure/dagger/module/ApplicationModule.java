@@ -2,8 +2,6 @@ package com.stylingandroid.materialrss.infrastructure.dagger.module;
 
 import android.content.Context;
 
-import com.stylingandroid.materialrss.AndroidApplication;
-
 import javax.inject.Singleton;
 
 import dagger.Module;

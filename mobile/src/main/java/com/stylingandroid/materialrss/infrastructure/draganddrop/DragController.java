@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.infrastructure.draganddrop;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,7 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.stylingandroid.materialrss.adapter.FeedAdapter;
+import com.stylingandroid.materialrss.presenter.adapter.FeedAdapter;
 
 public class DragController implements RecyclerView.OnItemTouchListener {
     public static final int ANIMATION_DURATION = 100;

@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss.net;
+package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
 import android.content.Context;
 

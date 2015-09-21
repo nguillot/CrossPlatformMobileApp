@@ -1,11 +1,11 @@
-package com.stylingandroid.materialrss.rss;
+package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.model.Feed;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

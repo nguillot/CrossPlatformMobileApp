@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
-import com.stylingandroid.materialrss.rss.SaRssParser;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.infrastructure.datasource.network.SaRssParser;
+import com.stylingandroid.materialrss.model.Feed;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

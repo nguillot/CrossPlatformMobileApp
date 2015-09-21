@@ -1,11 +1,11 @@
-package com.stylingandroid.materialrss.rss;
+package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.stylingandroid.materialrss.infrastructure.MockFeedDatasource;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.model.Feed;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.presenter.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -8,7 +8,8 @@ import android.view.MenuItem;
 import android.webkit.WebView;
 import android.widget.TextView;
 
-import com.stylingandroid.materialrss.rss.model.Item;
+import com.stylingandroid.materialrss.R;
+import com.stylingandroid.materialrss.model.Item;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

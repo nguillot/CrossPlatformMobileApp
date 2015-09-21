@@ -1,8 +1,7 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.presenter.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +9,11 @@ import android.view.ViewGroup;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.stylingandroid.materialrss.R;
+import com.stylingandroid.materialrss.presenter.activities.FeedListActivity;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
-import com.stylingandroid.materialrss.net.FeedApi;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.infrastructure.datasource.FeedApi;
+import com.stylingandroid.materialrss.model.Feed;
 
 import javax.inject.Inject;
 

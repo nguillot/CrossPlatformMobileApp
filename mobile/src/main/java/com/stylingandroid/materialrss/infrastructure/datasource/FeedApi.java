@@ -1,7 +1,7 @@
-package com.stylingandroid.materialrss.net;
+package com.stylingandroid.materialrss.infrastructure.datasource;
 
 import com.android.volley.Response;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.model.Feed;
 
 /**
  * It describes the Feed api.

@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss.activities;
+package com.stylingandroid.materialrss.presenter.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,17 +8,16 @@ import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.stylingandroid.materialrss.AndroidApplication;
-import com.stylingandroid.materialrss.DataFragment;
-import com.stylingandroid.materialrss.FeedListActivity;
+import com.stylingandroid.materialrss.infrastructure.android.AndroidApplication;
+import com.stylingandroid.materialrss.presenter.fragment.DataFragment;
 import com.stylingandroid.materialrss.R;
 import com.stylingandroid.materialrss.infrastructure.MockFeedDatasource;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.DaggerApplicationComponent;
 import com.stylingandroid.materialrss.infrastructure.dagger.module.ApplicationModule;
 import com.stylingandroid.materialrss.infrastructure.dagger.module.FeedApiModule;
-import com.stylingandroid.materialrss.net.FeedApi;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.infrastructure.datasource.FeedApi;
+import com.stylingandroid.materialrss.model.Feed;
 
 import org.junit.After;
 import org.junit.Before;

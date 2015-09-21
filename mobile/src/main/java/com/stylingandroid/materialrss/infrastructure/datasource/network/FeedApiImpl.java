@@ -1,11 +1,11 @@
-package com.stylingandroid.materialrss.net;
+package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
 import android.content.Context;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.stylingandroid.materialrss.rss.RssRequest;
-import com.stylingandroid.materialrss.rss.model.Feed;
+import com.stylingandroid.materialrss.infrastructure.datasource.FeedApi;
+import com.stylingandroid.materialrss.model.Feed;
 
 /**
  * Feed API implementation.

@@ -2,8 +2,8 @@ package com.stylingandroid.materialrss.infrastructure.dagger.component;
 
 import android.content.Context;
 
-import com.stylingandroid.materialrss.BaseActivity;
-import com.stylingandroid.materialrss.DataFragment;
+import com.stylingandroid.materialrss.presenter.activities.BaseActivity;
+import com.stylingandroid.materialrss.presenter.fragment.DataFragment;
 import com.stylingandroid.materialrss.infrastructure.dagger.module.ApplicationModule;
 import com.stylingandroid.materialrss.infrastructure.dagger.module.FeedApiModule;
 

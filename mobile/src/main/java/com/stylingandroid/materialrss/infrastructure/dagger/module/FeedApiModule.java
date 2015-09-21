@@ -2,8 +2,8 @@ package com.stylingandroid.materialrss.infrastructure.dagger.module;
 
 import android.content.Context;
 
-import com.stylingandroid.materialrss.net.FeedApi;
-import com.stylingandroid.materialrss.net.FeedApiImpl;
+import com.stylingandroid.materialrss.infrastructure.datasource.FeedApi;
+import com.stylingandroid.materialrss.infrastructure.datasource.network.FeedApiImpl;
 
 import javax.inject.Singleton;
 

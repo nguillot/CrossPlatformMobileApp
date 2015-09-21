@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".AndroidApplication"
+        android:name=".infrastructure.android.AndroidApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         tools:ignore="UnusedAttribute">
         <activity
-            android:name="com.stylingandroid.materialrss.FeedListActivity"
+            android:name=".presenter.activities.FeedListActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,12 +23,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.stylingandroid.materialrss.FeedDetailActivity"
+            android:name=".presenter.activities.FeedDetailActivity"
             android:label="@string/title_feed_detail"
-            android:parentActivityName="com.stylingandroid.materialrss.FeedListActivity">
+            android:parentActivityName=".presenter.activities.FeedListActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".FeedListActivity" />
+                android:value=".presenter.activities.FeedListActivity" />
         </activity>
     </application>
 

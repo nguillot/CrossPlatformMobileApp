@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss.adapter;
+package com.stylingandroid.materialrss.presenter.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.stylingandroid.materialrss.R;
-import com.stylingandroid.materialrss.rss.model.Item;
+import com.stylingandroid.materialrss.model.Item;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

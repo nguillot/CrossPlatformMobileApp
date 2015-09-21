@@ -1,7 +1,8 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.presenter.activities;
 
 import android.support.v7.app.AppCompatActivity;
 
+import com.stylingandroid.materialrss.infrastructure.android.AndroidApplication;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
 
 /**
@@ -14,7 +15,7 @@ public abstract class BaseActivity extends AppCompatActivity {
    *
    * @return {@link ApplicationComponent}
    */
-  protected ApplicationComponent getApplicationComponent() {
+  public ApplicationComponent getApplicationComponent() {
     return ((AndroidApplication) getApplication()).component();
   }
 }

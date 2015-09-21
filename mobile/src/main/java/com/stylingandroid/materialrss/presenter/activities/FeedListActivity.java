@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.presenter.activities;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -13,9 +13,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.stylingandroid.materialrss.adapter.FeedAdapter;
-import com.stylingandroid.materialrss.rss.model.Feed;
-import com.stylingandroid.materialrss.rss.model.Item;
+import com.stylingandroid.materialrss.presenter.fragment.DataFragment;
+import com.stylingandroid.materialrss.presenter.fragment.FeedConsumer;
+import com.stylingandroid.materialrss.R;
+import com.stylingandroid.materialrss.presenter.adapter.FeedAdapter;
+import com.stylingandroid.materialrss.infrastructure.draganddrop.DragController;
+import com.stylingandroid.materialrss.model.Feed;
+import com.stylingandroid.materialrss.model.Item;
 
 public class FeedListActivity extends BaseActivity
         implements FeedConsumer, FeedAdapter.ItemClickListener {

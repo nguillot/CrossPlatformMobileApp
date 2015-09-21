@@ -1,7 +1,7 @@
-package com.stylingandroid.materialrss.rss;
+package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
-import com.stylingandroid.materialrss.rss.model.Feed;
-import com.stylingandroid.materialrss.rss.model.Item;
+import com.stylingandroid.materialrss.model.Feed;
+import com.stylingandroid.materialrss.model.Item;
 
 import java.io.InputStream;
 import java.text.DateFormat;

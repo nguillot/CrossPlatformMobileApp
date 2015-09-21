@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss.rss.model;
+package com.stylingandroid.materialrss.model;
 
 import java.io.Serializable;
 

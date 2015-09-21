@@ -1,4 +1,4 @@
-package com.stylingandroid.materialrss;
+package com.stylingandroid.materialrss.infrastructure.android;
 
 import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.DaggerApplicationComponent;
