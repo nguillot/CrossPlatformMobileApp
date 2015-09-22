@@ -36,6 +36,8 @@ configurations {
 }
 
 dependencies {
+    compile project(':mvp')
+
     compile 'com.mcxiaoke.volley:library:1.0.7'
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.android.support:cardview-v7:22.2.0'

@@ -5,7 +5,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.stylingandroid.materialrss.model.Feed;
+import com.stylingandroid.materialrss.mvp.models.entities.Feed;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

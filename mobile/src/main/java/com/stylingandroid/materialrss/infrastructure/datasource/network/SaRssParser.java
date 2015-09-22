@@ -1,7 +1,8 @@
 package com.stylingandroid.materialrss.infrastructure.datasource.network;
 
-import com.stylingandroid.materialrss.model.Feed;
-import com.stylingandroid.materialrss.model.Item;
+
+import com.stylingandroid.materialrss.mvp.models.entities.Feed;
+import com.stylingandroid.materialrss.mvp.models.entities.FeedItem;
 
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -28,7 +29,7 @@ public final class SaRssParser {
     private ParseState state = ParseState.NONE;
 
     private Feed feed = Feed.NONE;
-    private Item currentItem = Item.NONE;
+    private FeedItem currentItem = FeedItem.NONE;
 
     private SaRssParser(XmlPullParser parser) {
         this.parser = parser;
@@ -75,13 +76,13 @@ public final class SaRssParser {
         if (CHANNEL.equals(name)) {
             feed = new Feed();
         } else if (ITEM.equals(name)) {
-            currentItem = new Item();
+            currentItem = new FeedItem();
         } else if (TITLE.equals(name)) {
-            if (currentItem != Item.NONE) {
+            if (currentItem != FeedItem.NONE) {
                 state = ParseState.ITEM_TITLE;
             }
         } else if (DESCRIPTION.equals(name)) {
-            if (currentItem != Item.NONE) {
+            if (currentItem != FeedItem.NONE) {
                 state = ParseState.ITEM_DESCRIPTION;
             }
         } else if (CONTENT.equals(name)) {
@@ -120,7 +121,7 @@ public final class SaRssParser {
     private void endTag(String name) {
         if (ITEM.equals(name)) {
             feed.addItem(currentItem);
-            currentItem = Item.NONE;
+            currentItem = FeedItem.NONE;
         }
         state = ParseState.NONE;
     }

@@ -9,15 +9,14 @@ import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.stylingandroid.materialrss.infrastructure.android.AndroidApplication;
-import com.stylingandroid.materialrss.presenter.fragment.DataFragment;
 import com.stylingandroid.materialrss.R;
-import com.stylingandroid.materialrss.infrastructure.MockFeedDatasource;
+import com.stylingandroid.materialrss.infrastructure.MockFeedDataSource;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
 import com.stylingandroid.materialrss.infrastructure.dagger.component.DaggerApplicationComponent;
 import com.stylingandroid.materialrss.infrastructure.dagger.module.ApplicationModule;
-import com.stylingandroid.materialrss.infrastructure.dagger.module.FeedApiModule;
-import com.stylingandroid.materialrss.infrastructure.datasource.FeedApi;
-import com.stylingandroid.materialrss.model.Feed;
+import com.stylingandroid.materialrss.infrastructure.dagger.module.FeedDataSourceModule;
+import com.stylingandroid.materialrss.mvp.models.datasource.FeedDataSource;
+import com.stylingandroid.materialrss.mvp.models.entities.Feed;
 
 import org.junit.After;
 import org.junit.Before;
@@ -44,13 +43,14 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class FeedListActivityTest {
 
+  public static final int DETAIL_ITEM_INDEX = 0;
   @Rule
   public ActivityTestRule<FeedListActivity> mActivityRule =
           new ActivityTestRule<>(FeedListActivity.class, true, false);
@@ -65,10 +65,9 @@ public class FeedListActivityTest {
   private Context mContext;
 
   @Mock
-  private FeedApiModule mFeedApiModule;
+  private FeedDataSourceModule mFeedDataSourceModule;
   @Mock
-  private FeedApi mFeedApi;
-
+  private FeedDataSource mFeedDataSource;
 
   @Before
   public void setUp() throws Exception {
@@ -76,21 +75,12 @@ public class FeedListActivityTest {
 
     mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-    doAnswer(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        DataFragment dataFragment = (DataFragment) invocation.getArguments()[2];
-        Feed feed = MockFeedDatasource.getFeed(InstrumentationRegistry.getInstrumentation().getContext());
-        dataFragment.onResponse(feed);
-        return null;
-      }
-    }).when(mFeedApi).updateFeedFrom(anyString(), any(DataFragment.class), any(DataFragment.class));
-
-    when(mFeedApiModule.getFeedApi(InstrumentationRegistry.getInstrumentation().getContext())).thenReturn(mFeedApi);
+    initMockDataSource();
+    when(mFeedDataSourceModule.getFeedDataSource(mContext)).thenReturn(mFeedDataSource);
 
     ApplicationComponent component = DaggerApplicationComponent.builder()
-            .applicationModule(new ApplicationModule(InstrumentationRegistry.getInstrumentation().getContext()))
-            .feedApiModule(mFeedApiModule)
+            .applicationModule(new ApplicationModule(mContext))
+            .feedDataSourceModule(mFeedDataSourceModule)
             .build();
 
     AndroidApplication app = (AndroidApplication) InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
@@ -98,6 +88,36 @@ public class FeedListActivityTest {
 
     Intent intent = new Intent();
     mActivityRule.launchActivity(intent);
+  }
+
+  private void initMockDataSource() {
+    final Feed feed = MockFeedDataSource.getFeed(InstrumentationRegistry.getInstrumentation().getContext());
+    //
+    mockRequestFeed(feed);
+    //
+    mockRequestFeedItem(feed);
+  }
+
+  private void mockRequestFeedItem(final Feed feed) {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        FeedDataSource.FeedItemDataSourceListener listener = (FeedDataSource.FeedItemDataSourceListener) invocation.getArguments()[1];
+        listener.onFeedItemReceived(feed.getItems().get(DETAIL_ITEM_INDEX));
+        return null;
+      }
+    }).when(mFeedDataSource).requestFeedItem(anyLong(), any(FeedDataSource.FeedItemDataSourceListener.class));
+  }
+
+  private void mockRequestFeed(final Feed feed) {
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        FeedDataSource.FeedDataSourceListener listener = (FeedDataSource.FeedDataSourceListener) invocation.getArguments()[0];
+        listener.onFeedReceived(feed, null);
+        return null;
+      }
+    }).when(mFeedDataSource).requestFeed(any(FeedDataSource.FeedDataSourceListener.class));
   }
 
   @After
@@ -157,7 +177,7 @@ public class FeedListActivityTest {
   @Test
   public void testDetailActivityOpen() throws ParseException {
 
-    onView(withId(R.id.list)).perform(RecyclerViewActions.actionOnItemAtPosition(0, ViewActions.click()));
+    onView(withId(R.id.list)).perform(RecyclerViewActions.actionOnItemAtPosition(DETAIL_ITEM_INDEX, ViewActions.click()));
 
     checkToolbarTitle(mContext.getString(R.string.title_feed_detail));
 
@@ -170,10 +190,13 @@ public class FeedListActivityTest {
   }
 
   @Test
-  public void testGoOnDetailActivityAndBack() {
-    onView(withId(R.id.list)).perform(RecyclerViewActions.actionOnItemAtPosition(0, ViewActions.click()));
+  public void testGoOnDetailActivityAndBack() throws InterruptedException {
+    onView(withId(R.id.list)).perform(RecyclerViewActions.actionOnItemAtPosition(DETAIL_ITEM_INDEX, ViewActions.click()));
 
     pressBack();
+
+    //TODO due to the bug https://code.google.com/p/android-test-kit/issues/detail?id=55 we need to wait, an idling resource will be more elegant but takes time to implement but it is only an hack waiting for a fix
+    Thread.sleep(500);
 
     checkToolbarTitle(mContext.getString(R.string.app_name));
   }

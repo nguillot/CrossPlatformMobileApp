@@ -6,14 +6,14 @@ import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.stylingandroid.materialrss.infrastructure.datasource.network.SaRssParser;
-import com.stylingandroid.materialrss.model.Feed;
+import com.stylingandroid.materialrss.mvp.models.entities.Feed;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-public final class MockFeedDatasource {
+public final class MockFeedDataSource {
 
   public static Feed getFeed(Context instrumentationContext) {
     String feedStream = getStringFromAssetFile(instrumentationContext);

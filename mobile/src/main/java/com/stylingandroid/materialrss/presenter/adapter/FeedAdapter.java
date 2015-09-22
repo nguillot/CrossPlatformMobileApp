@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.stylingandroid.materialrss.R;
-import com.stylingandroid.materialrss.model.Item;
+import com.stylingandroid.materialrss.mvp.models.entities.FeedItem;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -21,10 +21,10 @@ import java.util.Locale;
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     private DateFormat dateFormat = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM, Locale.getDefault());
 
-    private List<Item> items;
+    private List<FeedItem> items;
     private ItemClickListener itemClickListener;
 
-    public FeedAdapter(List<Item> objects, @NonNull ItemClickListener itemClickListener) {
+    public FeedAdapter(List<FeedItem> objects, @NonNull ItemClickListener itemClickListener) {
         this.items = objects;
         this.itemClickListener = itemClickListener;
         setHasStableIds(true);
@@ -39,7 +39,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        final Item item = items.get(position);
+        final FeedItem item = items.get(position);
         viewHolder.setTitle(item.getTitle());
         viewHolder.setDescription(Html.fromHtml(item.getDescription()));
         viewHolder.setDate(dateFormat.format(new Date(item.getPubDate())));
@@ -65,7 +65,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
         int max = Math.max(start, end);
         int min = Math.min(start, end);
         if (min >= 0 && max < items.size()) {
-            Item item = items.remove(min);
+            FeedItem item = items.remove(min);
             items.add(max, item);
             notifyItemMoved(min, max);
         }
@@ -131,6 +131,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.ViewHolder> {
     }
 
     public interface ItemClickListener {
-        void itemClicked(Item item);
+        void itemClicked(FeedItem item);
     }
 }

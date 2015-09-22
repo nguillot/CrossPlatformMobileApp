@@ -9,27 +9,18 @@ import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.stylingandroid.materialrss.R;
-import com.stylingandroid.materialrss.model.Item;
+import com.stylingandroid.materialrss.mvp.presentation.presenters.FeedItemPresenter;
+import com.stylingandroid.materialrss.mvp.presentation.views.FeedItemView;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
-public class FeedDetailActivity extends BaseActivity {
+public class FeedDetailActivity extends BaseActivity implements FeedItemView {
   public static final String ARG_ITEM = "ARG_ITEM";
-  public static final String NEWLINE = "\\n";
-  public static final String BR = "<br />";
-  public static final String HTML_MIME_TYPE = "text/html";
+  private static final String HTML_MIME_TYPE = "text/html";
 
-  private DateFormat dateFormat = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM, Locale.getDefault());
+  private FeedItemPresenter mPresenter;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    getApplicationComponent().inject(this);
-
     setContentView(R.layout.feed_detail);
 
     ActionBar actionBar = getSupportActionBar();
@@ -37,30 +28,56 @@ public class FeedDetailActivity extends BaseActivity {
       actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
-    Item item = (Item) getIntent().getSerializableExtra(ARG_ITEM);
-
     TextView title = (TextView) findViewById(R.id.feed_detail_title);
     TextView date = (TextView) findViewById(R.id.feed_detail_date);
     WebView webView = (WebView) findViewById(R.id.feed_detail_body);
     ViewCompat.setTransitionName(title, getString(R.string.transition_title));
     ViewCompat.setTransitionName(date, getString(R.string.transition_date));
-    ViewCompat.setTransitionName(webView, getString(R.string.transition_body));
+    ViewCompat.setTransitionName(webView, getString(R.string.transition_date));
 
-    title.setText(item.getTitle());
-    date.setText(dateFormat.format(new Date(item.getPubDate())));
-    String html = item.getContent();
+    long itemTimestamp = getIntent().getLongExtra(ARG_ITEM, 0);
+    mPresenter = new FeedItemPresenter(this, itemTimestamp);
+  }
 
-    html = html.replaceAll(NEWLINE, BR);
-    webView.loadData(html, HTML_MIME_TYPE, null);
+  @Override
+  protected void onStop() {
+
+    super.onStop();
+    mPresenter.stop();
+  }
+
+  @Override
+  protected void onStart() {
+
+    super.onStart();
+    mPresenter.start(dataSource);
   }
 
   @Override
   public boolean onOptionsItemSelected(MenuItem menuItem) {
     int id = menuItem.getItemId();
     if (id == android.R.id.home) {
-      ActivityCompat.finishAfterTransition(this);
+      finish();
       return true;
     }
     return super.onOptionsItemSelected(menuItem);
+  }
+
+  @Override
+  public void setTitle(String title) {
+    TextView titleText = (TextView) findViewById(R.id.feed_detail_title);
+    titleText.setText(title);
+  }
+
+  @Override
+  public void setDate(String date) {
+    TextView dateText = (TextView) findViewById(R.id.feed_detail_date);
+    dateText.setText(date);
+  }
+
+  @Override
+  public void setBody(String htmlContent) {
+    WebView webView = (WebView) findViewById(R.id.feed_detail_body);
+    webView.loadData(htmlContent, HTML_MIME_TYPE, null);
   }
 }
