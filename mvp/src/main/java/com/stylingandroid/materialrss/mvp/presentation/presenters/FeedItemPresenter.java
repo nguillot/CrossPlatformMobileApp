@@ -30,9 +30,18 @@ public class FeedItemPresenter implements Presenter, GetFeedItemUsecase.GetFeedI
   @Override
   public void onFeedItemReceived(FeedItem response) {
     mView.setTitle(response.getTitle());
-    mView.setBody(response.getContent().replaceAll(NEWLINE, BR));
-    mView.setDate(mDateFormat.format(new Date(response.getPubDate())));
+    mView.setBody(feedItemFormattedContentFrom(response));
+    mView.setDate(feedItemFormattedPubDateFrom(response));
   }
+
+  public String feedItemFormattedContentFrom(FeedItem response) {
+    return response.getContent().replaceAll(NEWLINE, BR);
+  }
+
+  public String feedItemFormattedPubDateFrom(FeedItem response) {
+    return mDateFormat.format(new Date(response.getPubDate()));
+  }
+
 
   @Override
   public void start(FeedDataSource ds) {
