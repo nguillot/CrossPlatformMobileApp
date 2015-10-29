@@ -1,7 +1,6 @@
 package com.stylingandroid.materialrss.presenter.activities;
 
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
@@ -50,7 +49,7 @@ public class FeedDetailActivity extends BaseActivity implements FeedItemView {
   protected void onStart() {
 
     super.onStart();
-    mPresenter.start(dataSource);
+    mPresenter.start(getDataSource());
   }
 
   @Override

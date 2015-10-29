@@ -52,7 +52,7 @@ public class FeedListActivity extends BaseActivity
   protected void onStart() {
 
     super.onStart();
-    mFeedPresenter.start(dataSource);
+    mFeedPresenter.start(getDataSource());
   }
 
   @Override

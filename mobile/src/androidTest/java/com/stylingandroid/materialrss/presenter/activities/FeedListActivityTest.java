@@ -11,10 +11,6 @@ import android.support.test.runner.AndroidJUnit4;
 import com.stylingandroid.materialrss.infrastructure.android.AndroidApplication;
 import com.stylingandroid.materialrss.R;
 import com.stylingandroid.materialrss.infrastructure.MockFeedDataSource;
-import com.stylingandroid.materialrss.infrastructure.dagger.component.ApplicationComponent;
-import com.stylingandroid.materialrss.infrastructure.dagger.component.DaggerApplicationComponent;
-import com.stylingandroid.materialrss.infrastructure.dagger.module.ApplicationModule;
-import com.stylingandroid.materialrss.infrastructure.dagger.module.FeedDataSourceModule;
 import com.stylingandroid.materialrss.mvp.models.datasource.FeedDataSource;
 import com.stylingandroid.materialrss.mvp.models.entities.Feed;
 
@@ -45,7 +41,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
 public class FeedListActivityTest {
@@ -65,8 +60,6 @@ public class FeedListActivityTest {
   private Context mContext;
 
   @Mock
-  private FeedDataSourceModule mFeedDataSourceModule;
-  @Mock
   private FeedDataSource mFeedDataSource;
 
   @Before
@@ -76,15 +69,9 @@ public class FeedListActivityTest {
     mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     initMockDataSource();
-    when(mFeedDataSourceModule.getFeedDataSource(mContext)).thenReturn(mFeedDataSource);
-
-    ApplicationComponent component = DaggerApplicationComponent.builder()
-            .applicationModule(new ApplicationModule(mContext))
-            .feedDataSourceModule(mFeedDataSourceModule)
-            .build();
 
     AndroidApplication app = (AndroidApplication) InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
-    app.setApplicationComponent(component);
+    app.setDataSource(mFeedDataSource);
 
     Intent intent = new Intent();
     mActivityRule.launchActivity(intent);
